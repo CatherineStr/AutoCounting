@@ -18,3 +18,8 @@ C:\Users\Катя\Desktop\Work\AutoCounting\AutoCounting\bin\Debug\AutoCounting.
 C:\Users\Катя\Desktop\Work\AutoCounting\AutoCounting\obj\Debug\AutoCounting.mainForm.resources
 C:\Users\Катя\Desktop\Work\AutoCounting\AutoCounting\obj\Debug\AutoCounting.Resources.resources
 C:\Users\Катя\Desktop\Work\AutoCounting\AutoCounting\obj\Debug\AutoCounting.vbproj.GenerateResource.Cache
+C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Framework.dll
+C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.dll
+C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.pdb
+C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.xml
+C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\obj\Debug\AutoCounting.vbprojResolveAssemblyReference.cache
