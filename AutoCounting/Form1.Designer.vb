@@ -32,6 +32,7 @@ Partial Class mainForm
         Me.Source_pb = New System.Windows.Forms.PictureBox()
         Me.difference_pb = New System.Windows.Forms.PictureBox()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
+        Me.settings_btn = New System.Windows.Forms.Button()
         Me.Panel2.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -56,6 +57,7 @@ Partial Class mainForm
         '
         'Panel2
         '
+        Me.Panel2.Controls.Add(Me.settings_btn)
         Me.Panel2.Controls.Add(Me.Stop_btn)
         Me.Panel2.Controls.Add(Me.break_btn)
         Me.Panel2.Controls.Add(Me.start_btn)
@@ -127,7 +129,7 @@ Partial Class mainForm
         '
         Me.SplitContainer2.Panel2.Controls.Add(Me.PictureBox2)
         Me.SplitContainer2.Size = New System.Drawing.Size(579, 453)
-        Me.SplitContainer2.SplitterDistance = 230
+        Me.SplitContainer2.SplitterDistance = 224
         Me.SplitContainer2.TabIndex = 1
         '
         'Source_pb
@@ -136,7 +138,7 @@ Partial Class mainForm
         Me.Source_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Source_pb.Location = New System.Drawing.Point(0, 0)
         Me.Source_pb.Name = "Source_pb"
-        Me.Source_pb.Size = New System.Drawing.Size(579, 230)
+        Me.Source_pb.Size = New System.Drawing.Size(579, 224)
         Me.Source_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.Source_pb.TabIndex = 1
         Me.Source_pb.TabStop = False
@@ -158,10 +160,20 @@ Partial Class mainForm
         Me.PictureBox2.Dock = System.Windows.Forms.DockStyle.Fill
         Me.PictureBox2.Location = New System.Drawing.Point(0, 0)
         Me.PictureBox2.Name = "PictureBox2"
-        Me.PictureBox2.Size = New System.Drawing.Size(579, 219)
+        Me.PictureBox2.Size = New System.Drawing.Size(579, 225)
         Me.PictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.PictureBox2.TabIndex = 0
         Me.PictureBox2.TabStop = False
+        '
+        'settings_btn
+        '
+        Me.settings_btn.Dock = System.Windows.Forms.DockStyle.Right
+        Me.settings_btn.Location = New System.Drawing.Point(1085, 0)
+        Me.settings_btn.Name = "settings_btn"
+        Me.settings_btn.Size = New System.Drawing.Size(75, 37)
+        Me.settings_btn.TabIndex = 4
+        Me.settings_btn.Text = "Настройки"
+        Me.settings_btn.UseVisualStyleBackColor = True
         '
         'mainForm
         '
@@ -199,5 +211,6 @@ Partial Class mainForm
     Friend WithEvents Source_pb As System.Windows.Forms.PictureBox
     Friend WithEvents PictureBox2 As System.Windows.Forms.PictureBox
     Friend WithEvents difference_pb As System.Windows.Forms.PictureBox
+    Friend WithEvents settings_btn As System.Windows.Forms.Button
 
 End Class

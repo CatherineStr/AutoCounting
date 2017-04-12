@@ -39,10 +39,6 @@ Public Class mainForm
     End Sub
 
 
-    Private Sub ShowSettings_btn_Click(sender As Object, e As EventArgs)
-        _autoCountMethods.showSettings()
-    End Sub
-
     Private Sub sourceImgChanged(ByVal sender As Object, ByVal e As EventArgs)
         Me.Source_pb.Image = _autoCountMethods.SourceBitmap.Bitmap
     End Sub
@@ -56,7 +52,12 @@ Public Class mainForm
     End Sub
 
     Private Sub start_btn_Click(sender As Object, e As EventArgs) Handles start_btn.Click
+        If _autoCountMethods.StopFlag Then
+            _autoCountMethods.StopFlag = False
+            Return
+        End If
         If Not stopCalculations() Then Return
+        _autoCountMethods.StopFlag = False
         thread = New Thread(AddressOf _autoCountMethods.start)
         thread.Start()
     End Sub
@@ -85,9 +86,15 @@ Public Class mainForm
     End Sub
 
     Private Sub Stop_btn_Click(sender As Object, e As EventArgs) Handles Stop_btn.Click
-        If thread Is Nothing Then Return
-        If thread.ThreadState <> System.Diagnostics.ThreadState.Terminated And thread.ThreadState <> ThreadState.Aborted And thread.ThreadState <> ThreadState.Stopped And thread.ThreadState <> ThreadState.Suspended Then
-            thread.Suspend()
-        End If
+        'If thread Is Nothing Then Return
+        'If thread.ThreadState <> System.Diagnostics.ThreadState.Terminated And thread.ThreadState <> ThreadState.Aborted And thread.ThreadState <> ThreadState.Stopped And thread.ThreadState <> ThreadState.Suspended Then
+        '    thread.Suspend()
+        'End If
+        _autoCountMethods.StopFlag = True
+    End Sub
+
+    Private Sub settings_btn_Click(sender As Object, e As EventArgs) Handles settings_btn.Click
+        If Not stopCalculations() Then Return
+        _autoCountMethods.showSettings()
     End Sub
 End Class

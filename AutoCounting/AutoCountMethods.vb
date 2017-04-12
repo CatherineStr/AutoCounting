@@ -14,8 +14,11 @@ Public Class AutoCountMethods
     Private _bgGrayM As GrayMatrix
 
     Private _curFrame As UInteger = 1
-    Private _coeffBG As Single = 0.95
+    Private _coeffBG As Single = 95
     Private _diffThreshold As Byte = 50
+
+    Private _stopFlag As Boolean = False
+    Private _diffPercent As Single = 0
 
     Public ReadOnly Property Logger As Logger
         Get
@@ -39,6 +42,14 @@ Public Class AutoCountMethods
         End Set
     End Property
 
+    Public Property StopFlag As Boolean
+        Get
+            Return _stopFlag
+        End Get
+        Set(value As Boolean)
+            _stopFlag = value
+        End Set
+    End Property
 
     Private Sub OnSourceImgChanged(ByVal e As EventArgs)
         Dim handler As EventHandler = sourceImgChangedEvent
@@ -92,8 +103,10 @@ Public Class AutoCountMethods
 
     Public Sub New()
         _settingsStorageRoot.DefaultWriter = New IniFileSettingsWriter("parameters.ini")
-        _settingsStorageRoot.CreateDoubleSetting("zoom", 0.5)
+        '_settingsStorageRoot.CreateDoubleSetting("zoom", 0.5)
         _settingsStorageRoot.CreateStringSetting("defaultDirectory", Application.StartupPath + "\18_08_2015_13_50_58_2__", "Директория по умолчанию", "Директория, из которой загружаются изображения")
+        _settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
+        _settingsStorageRoot.CreateIntegerSetting("diffThreshold", 50, "Порог разницы", "Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым")
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
     End Sub
 
@@ -140,7 +153,7 @@ Public Class AutoCountMethods
 
         refreshBG()
         calcDifference(_sourceGrayM.Width \ 3, _sourceGrayM.Height \ 3, _sourceGrayM.Width, _sourceGrayM.Height)
-        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString())
+        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "           процент отличий " + Math.Round(100 * _diffPercent, 3).ToString())
         sw.Stop()
         'SourceBitmap.Resize(CInt(SourceBitmap.Width * Zoom), CInt(SourceBitmap.Height * Zoom))
     End Sub
@@ -151,9 +164,10 @@ Public Class AutoCountMethods
         If IsNothing(_bgGrayM) Then _bgGrayM = BitmapConverter.BitmapToGrayMatrix(bgBitmap.Bitmap)
 
         'Logger.AddInformation("Старт обновления пикселей фона...")
+        _coeffBG = CInt(_settingsStorageRoot.FindSetting("coeffBG").ValueAsString())
         For y As Integer = 0 To _bgGrayM.Height - 1
             For x As Integer = 0 To _bgGrayM.Width - 1
-                Dim newVal = CInt(_bgGrayM.Gray(x, y) * _coeffBG + _sourceGrayM.Gray(x, y) * (1 - _coeffBG))
+                Dim newVal = CInt(_bgGrayM.Gray(x, y) * _coeffBG / 100 + _sourceGrayM.Gray(x, y) * (1 - _coeffBG / 100))
                 _bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newVal, Byte.MinValue), Byte.MaxValue))
             Next x
         Next y
@@ -163,7 +177,12 @@ Public Class AutoCountMethods
     End Sub
 
     Public Sub start()
+        _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
         For i As Integer = _curFrame To _files.Length
+            If (StopFlag) Then
+                i -= 1
+                Continue For
+            End If
             nextFrame()
         Next i
     End Sub
@@ -178,13 +197,21 @@ Public Class AutoCountMethods
         Dim bgGray = _bgGrayM.Gray
         start_x = Math.Max(start_x, 0)
         start_y = Math.Max(start_y, 0)
-        For y As Integer = start_y To Math.Min(diffGrayM.Height - 1, start_y + height - 1)
-            For x As Integer = start_x To Math.Min(diffGrayM.Width - 1, start_x + width - 1)
+        width = Math.Min(diffGrayM.Width - 1, start_x + width - 1)
+        height = Math.Min(diffGrayM.Height - 1, start_y + height - 1)
+
+        _diffThreshold = CInt(_settingsStorageRoot.FindSetting("diffThreshold").ValueAsString())
+        _diffPercent = 0
+
+        For y As Integer = start_y To height
+            For x As Integer = start_x To width
                 Dim newVal = CByte(Math.Abs(CInt(diffGrayM.Gray(x, y)) - CInt(bgGray(x, y))))
                 diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+                _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
             Next x
         Next y
 
+        _diffPercent /= (width - start_x + 1) * (height - start_y + 1)
         DiffBitmap = New DisplayBitmap(diffGrayM.ToRGBMatrix.ToBitmap())
     End Sub
 
