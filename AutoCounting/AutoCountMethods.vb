@@ -7,18 +7,34 @@ Public Class AutoCountMethods
     Private _logger As New Logger
     Private _settingsStorageRoot As New SettingsStorageRoot
     Private _files As String()
+
     Private _sourceBitmap As DisplayBitmap
     Private _bgBitmap As DisplayBitmap
     Private _diffBitmap As DisplayBitmap
     Private _sourceGrayM As GrayMatrix
     Private _bgGrayM As GrayMatrix
 
-    Private _curFrame As UInteger = 1
-    Private _coeffBG As Single = 95
-    Private _diffThreshold As Byte = 50
+    'manual initializing variables and constants 
+    Private _coeffBG As Single = 95                 'Процент от старого фона, который берётся для формирования обновлённого фона
+    Private _diffThreshold As Byte = 50             'Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым
+    'Private _skipFrames As Integer = 0              'количество фреймов, которые надо пропустить после инкремента машин
+    Private _diffPercThreshold As Single = 0.5      'порог в диапазоне процентов разницы, при превышении которого производится инкремент количества машин
+    'Private _minDiff As Single = Single.MaxValue
+    Private _fifoSize As Integer = 10               'размер fifo-буфера, в котором хранятся последние значения процентов разницы, при которых был произведён инкремент машин
 
-    Private _stopFlag As Boolean = False
+    Private _maxDiffs As Queue(Of Single)
+    Private _avgMaxDiff As Single = Single.MinValue
+
+    Private _curFrame As UInteger = 0
+    Private _numberCars As Integer = 0
     Private _diffPercent As Single = 0
+    Private _stopFlag As Boolean = False
+    Private _doesCarApproach As Boolean = False
+    Private _startX As Integer = 0
+    Private _startY As Integer = 0
+    Private _areaWidth As Integer = 0
+    Private _areaHeight As Integer = 0
+
 
     Public ReadOnly Property Logger As Logger
         Get
@@ -88,6 +104,41 @@ Public Class AutoCountMethods
         End Set
     End Property
 
+    Public Property StartX As Integer
+        Get
+            Return _startX
+        End Get
+        Set(value As Integer)
+            _startX = value
+        End Set
+    End Property
+
+    Public Property StartY As Integer
+        Get
+            Return _startY
+        End Get
+        Set(value As Integer)
+            _startY = value
+        End Set
+    End Property
+
+    Public Property AreaWidth As Integer
+        Get
+            Return _areaWidth
+        End Get
+        Set(value As Integer)
+            _areaWidth = value
+        End Set
+    End Property
+
+    Public Property AreaHeight As Integer
+        Get
+            Return _areaHeight
+        End Get
+        Set(value As Integer)
+            _areaHeight = value
+        End Set
+    End Property
 
     Private Sub OnDiffImgChanged(ByVal e As EventArgs)
         Dim handler As EventHandler = diffImgChangedEvent
@@ -108,13 +159,14 @@ Public Class AutoCountMethods
         _settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
         _settingsStorageRoot.CreateIntegerSetting("diffThreshold", 50, "Порог разницы", "Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым")
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
+        _maxDiffs = New Queue(Of Single)()
     End Sub
 
-    Public Sub prevFrame()
-
-        If (_curFrame = 0) Then Return
-        _curFrame -= 1
-        'SourceBitmap = New DisplayBitmap(New Bitmap(_files(_curFrame)))
+    Public Sub getFirstFrame()
+        _curFrame = 0
+        _numberCars = 0
+        _avgMaxDiff = Single.MinValue
+        _maxDiffs.Clear()
 
         Dim source As Bitmap
         Try
@@ -126,10 +178,9 @@ Public Class AutoCountMethods
             source = New Bitmap(_files(_curFrame))
         End Try
         _sourceGrayM = BitmapConverter.BitmapToGrayMatrix(source)
+        _sourceGrayM = New GrayMatrix(_sourceGrayM.ResizeMatrixHalf(_sourceGrayM.Gray))
         _bgGrayM = _sourceGrayM
-        'Dim q As GrayMatrix = grayM.ResizeHalf()
         Dim tmpSourceBitmap = New DisplayBitmap(_sourceGrayM.ToRGBMatrix.ToBitmap())
-        'tmpSourceBitmap.Resize(CInt(tmpSourceBitmap.Width * Zoom), CInt(tmpSourceBitmap.Height * Zoom))
         SourceBitmap = tmpSourceBitmap
         bgBitmap = tmpSourceBitmap
     End Sub
@@ -147,14 +198,21 @@ Public Class AutoCountMethods
             source = New Bitmap(_files(_curFrame))
         End Try
         _sourceGrayM = BitmapConverter.BitmapToGrayMatrix(source)
+        _sourceGrayM = New GrayMatrix(_sourceGrayM.ResizeMatrixHalf(_sourceGrayM.Gray))
         SourceBitmap = New DisplayBitmap(_sourceGrayM.ToRGBMatrix.ToBitmap)
         Dim sw = New Stopwatch()
+        _coeffBG = CInt(_settingsStorageRoot.FindSetting("coeffBG").ValueAsString())
+        _diffThreshold = CInt(_settingsStorageRoot.FindSetting("diffThreshold").ValueAsString())
         sw.Start()
 
-        refreshBG()
-        calcDifference(_sourceGrayM.Width \ 3, _sourceGrayM.Height \ 3, _sourceGrayM.Width, _sourceGrayM.Height)
-        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "           процент отличий " + Math.Round(100 * _diffPercent, 3).ToString())
+        
+        handleFrame()
         sw.Stop()
+        Dim approaching As String = ""
+        If _doesCarApproach Then
+            approaching = "   приближается автомобиль "
+        End If
+        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "   процент отличий " + Math.Round(100 * _diffPercent, 3).ToString() + "   средняя максимальная разница " + Math.Round(_avgMaxDiff * 100, 3).ToString() + "    количество авто " + _numberCars.ToString() + approaching)
         'SourceBitmap.Resize(CInt(SourceBitmap.Width * Zoom), CInt(SourceBitmap.Height * Zoom))
     End Sub
 
@@ -188,30 +246,66 @@ Public Class AutoCountMethods
     End Sub
 
     Public Sub break()
-        _curFrame = 1
-        prevFrame()
+        getFirstFrame()
     End Sub
 
-    Public Sub calcDifference(start_x As Integer, start_y As Integer, width As Integer, height As Integer)
+    Public Sub handleFrame()
+        If IsNothing(SourceBitmap) Then Return
+        If IsNothing(bgBitmap) Then bgBitmap = SourceBitmap
+        If IsNothing(_bgGrayM) Then _bgGrayM = _sourceGrayM
         Dim diffGrayM As GrayMatrix = _sourceGrayM
-        Dim bgGray = _bgGrayM.Gray
-        start_x = Math.Max(start_x, 0)
-        start_y = Math.Max(start_y, 0)
-        width = Math.Min(diffGrayM.Width - 1, start_x + width - 1)
-        height = Math.Min(diffGrayM.Height - 1, start_y + height - 1)
 
-        _diffThreshold = CInt(_settingsStorageRoot.FindSetting("diffThreshold").ValueAsString())
+        Dim bgGray = _bgGrayM.Gray
+        StartX = Math.Max(StartX, 0)
+        StartY = Math.Max(StartY, 0)
+        Dim endX = Math.Min(diffGrayM.Width - 1, StartX + AreaWidth - 1)
+        Dim endY = Math.Min(diffGrayM.Height - 1, StartY + AreaHeight - 1)
+
+        Dim oldDiffPercent = _diffPercent
         _diffPercent = 0
 
-        For y As Integer = start_y To height
-            For x As Integer = start_x To width
-                Dim newVal = CByte(Math.Abs(CInt(diffGrayM.Gray(x, y)) - CInt(bgGray(x, y))))
-                diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
-                _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
+        For y As Integer = 0 To diffGrayM.Height - 1
+            For x As Integer = 0 To diffGrayM.Width - 1
+
+                Dim newVal = CInt(_bgGrayM.Gray(x, y) * _coeffBG / 100 + _sourceGrayM.Gray(x, y) * (1 - _coeffBG / 100))
+                _bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newVal, Byte.MinValue), Byte.MaxValue))
+
+                If x >= StartX And x <= endX And y >= StartY And y <= endY Then
+                    newVal = Math.Abs(CInt(diffGrayM.Gray(x, y)) - CInt(bgGray(x, y)))
+                    diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+                    _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
+                End If
             Next x
         Next y
 
-        _diffPercent /= (width - start_x + 1) * (height - start_y + 1)
+        _diffPercent /= (AreaWidth * AreaHeight)
+        If _diffPercent > _avgMaxDiff * _diffPercThreshold Then
+            If _doesCarApproach Then
+                If Math.Round(oldDiffPercent + (oldDiffPercent - _avgMaxDiff) * 100 * 2 / 3) > Math.Round(_diffPercent * 100) Then
+                    _doesCarApproach = False
+                    _numberCars += 1
+                    _maxDiffs.Enqueue(_diffPercent)
+                    '_maxDiffs.TrimToSize()
+                    If (_maxDiffs.Count > _fifoSize) Then
+                        _maxDiffs.Dequeue()
+                    End If
+                    _avgMaxDiff = _maxDiffs.Average()
+                End If
+            Else
+                _doesCarApproach = True
+            End If
+        Else
+            If _doesCarApproach Then
+                _doesCarApproach = False
+                _numberCars += 1
+                _maxDiffs.Enqueue(_diffPercent)
+                If (_maxDiffs.Count > _fifoSize) Then
+                    _maxDiffs.Dequeue()
+                End If
+                _avgMaxDiff = _maxDiffs.Average()
+            End If
+        End If
+        bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())
         DiffBitmap = New DisplayBitmap(diffGrayM.ToRGBMatrix.ToBitmap())
     End Sub
 

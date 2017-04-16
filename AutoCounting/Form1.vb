@@ -9,9 +9,6 @@ Public Class mainForm
     Private thread As Thread
 
     Private Sub mainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        '_files = Directory.GetFiles(_currentDir, "*.jpg")
-        'Source_pb.Image = New Bitmap(_files(_curFrame))
-
         _autoCountMethods = New AutoCountMethods()
         AddHandler _autoCountMethods.sourceImgChanged, AddressOf sourceImgChanged
         AddHandler _autoCountMethods.bgImgChanged, AddressOf bgImgChanged
@@ -24,20 +21,9 @@ Public Class mainForm
         lform.FormBorderStyle = FormBorderStyle.None
         lform.Show()
 
-        _autoCountMethods.prevFrame()
+        _autoCountMethods.getFirstFrame()
 
     End Sub
-
-    Private Sub next_btn_Click(sender As Object, e As EventArgs)
-        stopCalculations()
-        thread = New Thread(AddressOf _autoCountMethods.nextFrame)
-        thread.Start()
-        'If (_curFrame = (_files.Length - 1)) Then Return
-        '_curFrame+=1
-        'Source_pb.Image = New Bitmap(_files(_curFrame))
-        'Source_pb.Refresh()
-    End Sub
-
 
     Private Sub sourceImgChanged(ByVal sender As Object, ByVal e As EventArgs)
         Me.Source_pb.Image = _autoCountMethods.SourceBitmap.Bitmap
@@ -45,6 +31,11 @@ Public Class mainForm
 
     Private Sub bgImgChanged(ByVal sender As Object, ByVal e As EventArgs)
         Me.PictureBox2.Image = _autoCountMethods.bgBitmap.Bitmap
+        Me.x1_nud.Maximum = _autoCountMethods.bgBitmap.Width - 1
+        Me.areaW_nud.Maximum = _autoCountMethods.bgBitmap.Width
+        Me.y1_nud.Maximum = _autoCountMethods.bgBitmap.Height - 1
+        Me.areaH_nud.Maximum = _autoCountMethods.bgBitmap.Height
+
     End Sub
 
     Private Sub diffImgChanged(ByVal sender As Object, ByVal e As EventArgs)
@@ -58,6 +49,10 @@ Public Class mainForm
         End If
         If Not stopCalculations() Then Return
         _autoCountMethods.StopFlag = False
+        _autoCountMethods.StartX = x1_nud.Value
+        _autoCountMethods.StartY = y1_nud.Value
+        _autoCountMethods.AreaWidth = areaW_nud.Value
+        _autoCountMethods.AreaHeight = areaH_nud.Value
         thread = New Thread(AddressOf _autoCountMethods.start)
         thread.Start()
     End Sub
@@ -81,20 +76,24 @@ Public Class mainForm
     End Function
 
     Private Sub break_btn_Click(sender As Object, e As EventArgs) Handles break_btn.Click
-        stopCalculations()
+        If Not stopCalculations() Then Return
         _autoCountMethods.break()
     End Sub
 
     Private Sub Stop_btn_Click(sender As Object, e As EventArgs) Handles Stop_btn.Click
-        'If thread Is Nothing Then Return
-        'If thread.ThreadState <> System.Diagnostics.ThreadState.Terminated And thread.ThreadState <> ThreadState.Aborted And thread.ThreadState <> ThreadState.Stopped And thread.ThreadState <> ThreadState.Suspended Then
-        '    thread.Suspend()
-        'End If
         _autoCountMethods.StopFlag = True
     End Sub
 
     Private Sub settings_btn_Click(sender As Object, e As EventArgs) Handles settings_btn.Click
         If Not stopCalculations() Then Return
         _autoCountMethods.showSettings()
+    End Sub
+
+    Private Sub x1_nud_ValueChanged(sender As Object, e As EventArgs) Handles x1_nud.ValueChanged
+        areaW_nud.Minimum = x1_nud.Value + 1
+    End Sub
+
+    Private Sub y1_nud_ValueChanged(sender As Object, e As EventArgs) Handles y1_nud.ValueChanged
+        areaH_nud.Minimum = y1_nud.Value + 1
     End Sub
 End Class
