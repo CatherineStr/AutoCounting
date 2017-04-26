@@ -24,6 +24,14 @@ Partial Class mainForm
     Private Sub InitializeComponent()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.areaH_nud = New System.Windows.Forms.NumericUpDown()
+        Me.areaW_nud = New System.Windows.Forms.NumericUpDown()
+        Me.y1_nud = New System.Windows.Forms.NumericUpDown()
+        Me.x1_nud = New System.Windows.Forms.NumericUpDown()
         Me.settings_btn = New System.Windows.Forms.Button()
         Me.Stop_btn = New System.Windows.Forms.Button()
         Me.break_btn = New System.Windows.Forms.Button()
@@ -33,15 +41,11 @@ Partial Class mainForm
         Me.Source_pb = New System.Windows.Forms.PictureBox()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
         Me.difference_pb = New System.Windows.Forms.PictureBox()
-        Me.x1_nud = New System.Windows.Forms.NumericUpDown()
-        Me.y1_nud = New System.Windows.Forms.NumericUpDown()
-        Me.areaW_nud = New System.Windows.Forms.NumericUpDown()
-        Me.areaH_nud = New System.Windows.Forms.NumericUpDown()
-        Me.Label1 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.Label4 = New System.Windows.Forms.Label()
         Me.Panel2.SuspendLayout()
+        CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.y1_nud, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.x1_nud, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -53,10 +57,6 @@ Partial Class mainForm
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.x1_nud, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.y1_nud, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Panel1
@@ -86,6 +86,80 @@ Partial Class mainForm
         Me.Panel2.Name = "Panel2"
         Me.Panel2.Size = New System.Drawing.Size(1160, 51)
         Me.Panel2.TabIndex = 3
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(854, 9)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(69, 13)
+        Me.Label4.TabIndex = 12
+        Me.Label4.Text = "Высота обл."
+        '
+        'Label3
+        '
+        Me.Label3.AutoSize = True
+        Me.Label3.Location = New System.Drawing.Point(779, 9)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(70, 13)
+        Me.Label3.TabIndex = 11
+        Me.Label3.Text = "Ширина обл."
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Location = New System.Drawing.Point(679, 9)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(18, 13)
+        Me.Label2.TabIndex = 10
+        Me.Label2.Text = "y1"
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(603, 9)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(18, 13)
+        Me.Label1.TabIndex = 9
+        Me.Label1.Text = "x1"
+        '
+        'areaH_nud
+        '
+        Me.areaH_nud.Location = New System.Drawing.Point(855, 25)
+        Me.areaH_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
+        Me.areaH_nud.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.areaH_nud.Name = "areaH_nud"
+        Me.areaH_nud.Size = New System.Drawing.Size(68, 20)
+        Me.areaH_nud.TabIndex = 8
+        Me.areaH_nud.Value = New Decimal(New Integer() {10000, 0, 0, 0})
+        '
+        'areaW_nud
+        '
+        Me.areaW_nud.Location = New System.Drawing.Point(781, 25)
+        Me.areaW_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
+        Me.areaW_nud.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.areaW_nud.Name = "areaW_nud"
+        Me.areaW_nud.Size = New System.Drawing.Size(68, 20)
+        Me.areaW_nud.TabIndex = 7
+        Me.areaW_nud.Value = New Decimal(New Integer() {10000, 0, 0, 0})
+        '
+        'y1_nud
+        '
+        Me.y1_nud.Location = New System.Drawing.Point(657, 25)
+        Me.y1_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
+        Me.y1_nud.Name = "y1_nud"
+        Me.y1_nud.Size = New System.Drawing.Size(68, 20)
+        Me.y1_nud.TabIndex = 6
+        Me.y1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
+        '
+        'x1_nud
+        '
+        Me.x1_nud.Location = New System.Drawing.Point(583, 26)
+        Me.x1_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
+        Me.x1_nud.Name = "x1_nud"
+        Me.x1_nud.Size = New System.Drawing.Size(68, 20)
+        Me.x1_nud.TabIndex = 5
+        Me.x1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
         '
         'settings_btn
         '
@@ -195,78 +269,6 @@ Partial Class mainForm
         Me.difference_pb.TabIndex = 1
         Me.difference_pb.TabStop = False
         '
-        'x1_nud
-        '
-        Me.x1_nud.Location = New System.Drawing.Point(583, 26)
-        Me.x1_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
-        Me.x1_nud.Name = "x1_nud"
-        Me.x1_nud.Size = New System.Drawing.Size(68, 20)
-        Me.x1_nud.TabIndex = 5
-        Me.x1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
-        '
-        'y1_nud
-        '
-        Me.y1_nud.Location = New System.Drawing.Point(657, 25)
-        Me.y1_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
-        Me.y1_nud.Name = "y1_nud"
-        Me.y1_nud.Size = New System.Drawing.Size(68, 20)
-        Me.y1_nud.TabIndex = 6
-        Me.y1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
-        '
-        'areaW_nud
-        '
-        Me.areaW_nud.Location = New System.Drawing.Point(781, 25)
-        Me.areaW_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
-        Me.areaW_nud.Name = "areaW_nud"
-        Me.areaW_nud.Size = New System.Drawing.Size(68, 20)
-        Me.areaW_nud.TabIndex = 7
-        Me.areaW_nud.Value = New Decimal(New Integer() {10000, 0, 0, 0})
-        '
-        'areaH_nud
-        '
-        Me.areaH_nud.Location = New System.Drawing.Point(855, 25)
-        Me.areaH_nud.Maximum = New Decimal(New Integer() {100000, 0, 0, 0})
-        Me.areaH_nud.Name = "areaH_nud"
-        Me.areaH_nud.Size = New System.Drawing.Size(68, 20)
-        Me.areaH_nud.TabIndex = 8
-        Me.areaH_nud.Value = New Decimal(New Integer() {10000, 0, 0, 0})
-        '
-        'Label1
-        '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(603, 9)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(18, 13)
-        Me.Label1.TabIndex = 9
-        Me.Label1.Text = "x1"
-        '
-        'Label2
-        '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(679, 9)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(18, 13)
-        Me.Label2.TabIndex = 10
-        Me.Label2.Text = "y1"
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(779, 9)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(70, 13)
-        Me.Label3.TabIndex = 11
-        Me.Label3.Text = "Ширина обл."
-        '
-        'Label4
-        '
-        Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(854, 9)
-        Me.Label4.Name = "Label4"
-        Me.Label4.Size = New System.Drawing.Size(69, 13)
-        Me.Label4.TabIndex = 12
-        Me.Label4.Text = "Высота обл."
-        '
         'mainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -280,6 +282,10 @@ Partial Class mainForm
         Me.Text = "AutoCounter"
         Me.Panel2.ResumeLayout(False)
         Me.Panel2.PerformLayout()
+        CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.y1_nud, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.x1_nud, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
@@ -291,10 +297,6 @@ Partial Class mainForm
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.x1_nud, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.y1_nud, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub

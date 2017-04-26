@@ -19,11 +19,8 @@ Public Class AutoCountMethods
     Private _diffThreshold As Byte = 50             'Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым
     'Private _skipFrames As Integer = 0              'количество фреймов, которые надо пропустить после инкремента машин
     Private _diffPercThreshold As Single = 0.5      'порог в диапазоне процентов разницы, при превышении которого производится инкремент количества машин
-    'Private _minDiff As Single = Single.MaxValue
-    Private _fifoSize As Integer = 10               'размер fifo-буфера, в котором хранятся последние значения процентов разницы, при которых был произведён инкремент машин
-
-    Private _maxDiffs As Queue(Of Single)
-    Private _avgMaxDiff As Single = Single.MinValue
+    Private _minDiff As Single = 0
+    Private _maxDiff As Single = 1
 
     Private _curFrame As UInteger = 0
     Private _numberCars As Integer = 0
@@ -159,14 +156,11 @@ Public Class AutoCountMethods
         _settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
         _settingsStorageRoot.CreateIntegerSetting("diffThreshold", 50, "Порог разницы", "Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым")
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
-        _maxDiffs = New Queue(Of Single)()
     End Sub
 
     Public Sub getFirstFrame()
         _curFrame = 0
         _numberCars = 0
-        _avgMaxDiff = Single.MinValue
-        _maxDiffs.Clear()
 
         Dim source As Bitmap
         Try
@@ -212,7 +206,7 @@ Public Class AutoCountMethods
         If _doesCarApproach Then
             approaching = "   приближается автомобиль "
         End If
-        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "   процент отличий " + Math.Round(100 * _diffPercent, 3).ToString() + "   средняя максимальная разница " + Math.Round(_avgMaxDiff * 100, 3).ToString() + "    количество авто " + _numberCars.ToString() + approaching)
+        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "   процент отличий " + Math.Round(100 * _diffPercent, 3).ToString() + "   maxDiff " + Math.Round(_maxDiff * 100, 3).ToString() + "   minDiff " + Math.Round(_minDiff * 100, 3).ToString() + "    количество авто " + _numberCars.ToString() + approaching)
         'SourceBitmap.Resize(CInt(SourceBitmap.Width * Zoom), CInt(SourceBitmap.Height * Zoom))
     End Sub
 
@@ -279,18 +273,10 @@ Public Class AutoCountMethods
         Next y
 
         _diffPercent /= (AreaWidth * AreaHeight)
-        If _diffPercent > _avgMaxDiff * _diffPercThreshold Then
+        _maxDiff = _maxDiff * _coeffBG / 100 + _diffPercent * (1 - _coeffBG / 100)
+        _minDiff = _minDiff * _coeffBG / 100 + _diffPercent * (1 - _coeffBG / 100)
+        If _diffPercent > (_maxDiff - _minDiff) * _diffPercThreshold Then
             If _doesCarApproach Then
-                If Math.Round(oldDiffPercent + (oldDiffPercent - _avgMaxDiff) * 100 * 2 / 3) > Math.Round(_diffPercent * 100) Then
-                    _doesCarApproach = False
-                    _numberCars += 1
-                    _maxDiffs.Enqueue(_diffPercent)
-                    '_maxDiffs.TrimToSize()
-                    If (_maxDiffs.Count > _fifoSize) Then
-                        _maxDiffs.Dequeue()
-                    End If
-                    _avgMaxDiff = _maxDiffs.Average()
-                End If
             Else
                 _doesCarApproach = True
             End If
@@ -298,11 +284,6 @@ Public Class AutoCountMethods
             If _doesCarApproach Then
                 _doesCarApproach = False
                 _numberCars += 1
-                _maxDiffs.Enqueue(_diffPercent)
-                If (_maxDiffs.Count > _fifoSize) Then
-                    _maxDiffs.Dequeue()
-                End If
-                _avgMaxDiff = _maxDiffs.Average()
             End If
         End If
         bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())

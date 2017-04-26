@@ -32,9 +32,9 @@ Public Class mainForm
     Private Sub bgImgChanged(ByVal sender As Object, ByVal e As EventArgs)
         Me.PictureBox2.Image = _autoCountMethods.bgBitmap.Bitmap
         Me.x1_nud.Maximum = _autoCountMethods.bgBitmap.Width - 1
-        Me.areaW_nud.Maximum = _autoCountMethods.bgBitmap.Width
+        Me.areaW_nud.Maximum = _autoCountMethods.bgBitmap.Width - x1_nud.Value
         Me.y1_nud.Maximum = _autoCountMethods.bgBitmap.Height - 1
-        Me.areaH_nud.Maximum = _autoCountMethods.bgBitmap.Height
+        Me.areaH_nud.Maximum = _autoCountMethods.bgBitmap.Height - y1_nud.Value
 
     End Sub
 
@@ -90,10 +90,17 @@ Public Class mainForm
     End Sub
 
     Private Sub x1_nud_ValueChanged(sender As Object, e As EventArgs) Handles x1_nud.ValueChanged
-        areaW_nud.Minimum = x1_nud.Value + 1
+        If _autoCountMethods Is Nothing Then Return
+        If _autoCountMethods.bgBitmap IsNot Nothing Then
+            Me.areaW_nud.Maximum = _autoCountMethods.bgBitmap.Width - x1_nud.Value
+        End If
+
     End Sub
 
     Private Sub y1_nud_ValueChanged(sender As Object, e As EventArgs) Handles y1_nud.ValueChanged
-        areaH_nud.Minimum = y1_nud.Value + 1
+        If _autoCountMethods Is Nothing Then Return
+        If _autoCountMethods.bgBitmap IsNot Nothing Then
+            Me.areaH_nud.Maximum = _autoCountMethods.bgBitmap.Height - y1_nud.Value
+        End If
     End Sub
 End Class
