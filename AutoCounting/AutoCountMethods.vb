@@ -153,8 +153,11 @@ Public Class AutoCountMethods
         _settingsStorageRoot.DefaultWriter = New IniFileSettingsWriter("parameters.ini")
         '_settingsStorageRoot.CreateDoubleSetting("zoom", 0.5)
         _settingsStorageRoot.CreateStringSetting("defaultDirectory", Application.StartupPath + "\18_08_2015_13_50_58_2__", "Директория по умолчанию", "Директория, из которой загружаются изображения")
-        _settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
+        '_settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
         _settingsStorageRoot.CreateIntegerSetting("diffThreshold", 50, "Порог разницы", "Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым")
+        _settingsStorageRoot.CreateDoubleSetting("fastSpeedChange", 0.05, "Скорость быстрого изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для быстрого обновления фона")
+        _settingsStorageRoot.CreateDoubleSetting("slowSpeedChange", 0.005, "Скорость медленного изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для медленного обновления фона")
+        _settingsStorageRoot.CreateIntegerSetting("generalizationRange", 20, "Степень генерализации", "Длина стороны квадратных блоков, которые выделяются на изображении при генерализации")
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
     End Sub
 
@@ -179,7 +182,7 @@ Public Class AutoCountMethods
         bgBitmap = tmpSourceBitmap
     End Sub
 
-    Public Sub nextFrame()
+    Public Sub nextFrame(mode As Integer)
         If (_curFrame = (_files.Length - 1)) Then Return
         _curFrame += 1
         Dim source As Bitmap
@@ -195,18 +198,28 @@ Public Class AutoCountMethods
         _sourceGrayM = New GrayMatrix(_sourceGrayM.ResizeMatrixHalf(_sourceGrayM.Gray))
         SourceBitmap = New DisplayBitmap(_sourceGrayM.ToRGBMatrix.ToBitmap)
         Dim sw = New Stopwatch()
-        _coeffBG = CInt(_settingsStorageRoot.FindSetting("coeffBG").ValueAsString())
+        '_coeffBG = CInt(_settingsStorageRoot.FindSetting("coeffBG").ValueAsString())
         _diffThreshold = CInt(_settingsStorageRoot.FindSetting("diffThreshold").ValueAsString())
+        _fastChange = CSng(_settingsStorageRoot.FindSetting("fastSpeedChange").ValueAsString())
+        _slowChange = CSng(_settingsStorageRoot.FindSetting("slowSpeedChange").ValueAsString())
+        _generalizationRange = CInt(_settingsStorageRoot.FindSetting("generalizationRange").ValueAsString())
         sw.Start()
+        Select Case mode
+            Case 0
+                handleFrame()
+            Case 1
+                handleFrameEdges()
+            Case 2
+                handleFrameGener()
+        End Select
 
-        
-        handleFrame()
+
         sw.Stop()
         Dim approaching As String = ""
         If _doesCarApproach Then
             approaching = "   приближается автомобиль "
         End If
-        Logger.AddInformation("кадр обработан за " + sw.Elapsed.ToString() + "   процент отличий " + Math.Round(100 * _diffPercent, 3).ToString() + "   maxDiff " + Math.Round(_maxDiff * 100, 3).ToString() + "   minDiff " + Math.Round(_minDiff * 100, 3).ToString() + "    количество авто " + _numberCars.ToString() + approaching)
+        Logger.AddInformation("кадр " + _curFrame.ToString() + " обработан за " + sw.Elapsed.ToString() + "   процент отличий " + Math.Round(100 * _diffPercent, 3).ToString() + "   maxDiff " + Math.Round(_maxDiff * 100, 3).ToString() + "   minDiff " + Math.Round(_minDiff * 100, 3).ToString() + "    количество авто " + _numberCars.ToString() + approaching)
         'SourceBitmap.Resize(CInt(SourceBitmap.Width * Zoom), CInt(SourceBitmap.Height * Zoom))
     End Sub
 
@@ -228,14 +241,14 @@ Public Class AutoCountMethods
         'Logger.AddInformation("Фон обновлён")
     End Sub
 
-    Public Sub start()
+    Public Sub start(mode As Integer)
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
         For i As Integer = _curFrame To _files.Length
             If (StopFlag) Then
                 i -= 1
                 Continue For
             End If
-            nextFrame()
+            nextFrame(mode)
         Next i
     End Sub
 
@@ -243,6 +256,10 @@ Public Class AutoCountMethods
         getFirstFrame()
     End Sub
 
+    Private _fastChange = 0.05
+    Private _slowChange = 0.005
+    'Private _diffThresholdVariant As Byte = 127
+    Private _numbFramesForBGLearning = CInt(_fastChange / _slowChange)
     Public Sub handleFrame()
         If IsNothing(SourceBitmap) Then Return
         If IsNothing(bgBitmap) Then bgBitmap = SourceBitmap
@@ -260,12 +277,21 @@ Public Class AutoCountMethods
 
         For y As Integer = 0 To diffGrayM.Height - 1
             For x As Integer = 0 To diffGrayM.Width - 1
-
-                Dim newVal = CInt(_bgGrayM.Gray(x, y) * _coeffBG / 100 + _sourceGrayM.Gray(x, y) * (1 - _coeffBG / 100))
+                Dim bgPixVal = _bgGrayM.Gray(x, y)
+                Dim sPixVal = _sourceGrayM.Gray(x, y)
+                'Dim newVal = CInt(bgPixVal * _coeffBG / 100 + sPixVal * (1 - _coeffBG / 100))
+                Dim newVal = 0
+                If (Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > _diffThreshold) And
+                    (_numbFramesForBGLearning = 0) Then
+                    newVal = CInt(bgPixVal * (1 - _slowChange) + sPixVal * _slowChange)
+                Else
+                    newVal = CInt(bgPixVal * (1 - _fastChange) + sPixVal * _fastChange)
+                    If (_numbFramesForBGLearning > 0) Then _numbFramesForBGLearning -= 1
+                End If
                 _bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newVal, Byte.MinValue), Byte.MaxValue))
 
                 If x >= StartX And x <= endX And y >= StartY And y <= endY Then
-                    newVal = Math.Abs(CInt(diffGrayM.Gray(x, y)) - CInt(bgGray(x, y)))
+                    newVal = Math.Abs(CInt(sPixVal) - CInt(bgPixVal))
                     diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
                     _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
                 End If
@@ -273,9 +299,14 @@ Public Class AutoCountMethods
         Next y
 
         _diffPercent /= (AreaWidth * AreaHeight)
-        _maxDiff = _maxDiff * _coeffBG / 100 + _diffPercent * (1 - _coeffBG / 100)
-        _minDiff = _minDiff * _coeffBG / 100 + _diffPercent * (1 - _coeffBG / 100)
-        If _diffPercent > (_maxDiff - _minDiff) * _diffPercThreshold Then
+        If _diffPercent > (_maxDiff - _minDiff) / 2 Then
+            _maxDiff = _diffPercent * _fastChange + _maxDiff * (1 - _fastChange)
+            _minDiff = _diffPercent * _slowChange + _minDiff * (1 - _slowChange)
+        Else
+            _maxDiff = _diffPercent * _slowChange + _maxDiff * (1 - _slowChange)
+            _minDiff = _diffPercent * _fastChange + _minDiff * (1 - _fastChange)
+        End If
+        If _diffPercent > (_maxDiff - _minDiff) / 2 Then
             If _doesCarApproach Then
             Else
                 _doesCarApproach = True
@@ -290,4 +321,184 @@ Public Class AutoCountMethods
         DiffBitmap = New DisplayBitmap(diffGrayM.ToRGBMatrix.ToBitmap())
     End Sub
 
+    Public Sub handleFrameEdges()
+        If IsNothing(SourceBitmap) Then Return
+        If IsNothing(bgBitmap) Then bgBitmap = SourceBitmap
+        If IsNothing(_bgGrayM) Then _bgGrayM = _sourceGrayM
+        Dim diffGrayM As GrayMatrix = _sourceGrayM
+
+        Dim sourceGrM = _sourceGrayM.Gray
+        Dim edges = detectEdges(sourceGrM)
+        Dim edgeGrayM = New GrayMatrix(edges)
+
+        'Dim bgGray = _bgGrayM.Gray
+        'StartX = Math.Max(StartX, 0)
+        'StartY = Math.Max(StartY, 0)
+        'Dim endX = Math.Min(diffGrayM.Width - 1, StartX + AreaWidth - 1)
+        'Dim endY = Math.Min(diffGrayM.Height - 1, StartY + AreaHeight - 1)
+
+        'Dim oldDiffPercent = _diffPercent
+        '_diffPercent = 0
+
+        'For y As Integer = 0 To diffGrayM.Height - 1
+        '    For x As Integer = 0 To diffGrayM.Width - 1
+        '        Dim bgPixVal = _bgGrayM.Gray(x, y)
+        '        Dim sPixVal = _sourceGrayM.Gray(x, y)
+        '        'Dim newVal = CInt(bgPixVal * _coeffBG / 100 + sPixVal * (1 - _coeffBG / 100))
+        '        Dim newVal = 0
+        '        'IIf(Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > (_maxDiff - _minDiff) / 2,
+        '        '    newVal = CInt(bgPixVal * (1 - _slowChange) + sPixVal * _slowChange),
+        '        '    newVal = CInt(bgPixVal * (1 - _fastChange) + sP(_maxDiff - _minDiff) / 2ixVal * _fastChange))
+        '        If (Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > _diffThreshold) And
+        '            (_numbFramesForBGLearning = 0) Then
+        '            newVal = CInt(bgPixVal * (1 - _slowChange) + sPixVal * _slowChange)
+        '        Else
+        '            newVal = CInt(bgPixVal * (1 - _fastChange) + sPixVal * _fastChange)
+        '            If (_numbFramesForBGLearning > 0) Then _numbFramesForBGLearning -= 1
+        '        End If
+        '        _bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newVal, Byte.MinValue), Byte.MaxValue))
+
+        '        'If x >= StartX And x <= endX And y >= StartY And y <= endY Then
+        '        '    newVal = Math.Abs(CInt(sPixVal) - CInt(bgPixVal))
+        '        '    diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+        '        '    _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
+        '        'End If
+        '    Next x
+        'Next y
+
+        '_diffPercent /= (AreaWidth * AreaHeight)
+        'If _diffPercent > (_maxDiff - _minDiff) / 2 Then
+        '    _maxDiff = _diffPercent * _fastChange + _maxDiff * (1 - _fastChange)
+        '    _minDiff = _diffPercent * _slowChange + _minDiff * (1 - _slowChange)
+        'Else
+        '    _maxDiff = _diffPercent * _slowChange + _maxDiff * (1 - _slowChange)
+        '    _minDiff = _diffPercent * _fastChange + _minDiff * (1 - _fastChange)
+        'End If
+        'If _diffPercent > (_maxDiff - _minDiff) / 2 Then
+        '    If _doesCarApproach Then
+        '    Else
+        '        _doesCarApproach = True
+        '    End If
+        'Else
+        '    If _doesCarApproach Then
+        '        _doesCarApproach = False
+        '        _numberCars += 1
+        '    End If
+        'End If
+        'bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())
+        'DiffBitmap = New DisplayBitmap(diffGrayM.ToRGBMatrix.ToBitmap())
+        DiffBitmap = New DisplayBitmap(edgeGrayM.ToRGBMatrix.ToBitmap())
+    End Sub
+
+    Public Function detectEdges(imageMatrix As Byte(,)) As Byte(,)
+        Dim grad1 = New Single(2, 2) {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}}
+        Dim grad2 = New Single(2, 2) {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}}
+        'Dim gradX = applyConvolutionMatrix(imageMatrix, grad1)
+        'Dim gradY = applyConvolutionMatrix(imageMatrix, grad2)
+        Dim pixAreaWidth = 1
+
+        Dim result As Byte(,) = New Byte(imageMatrix.GetLength(0) - 1, imageMatrix.GetLength(1) - 1) {}
+        Dim len0 = imageMatrix.GetLength(0)
+        Dim len1 = imageMatrix.GetLength(1)
+        For y As Integer = 0 To imageMatrix.GetLength(1) - 1
+            For x As Integer = 0 To imageMatrix.GetLength(0) - 1
+                Dim newPix As Single = 0, gradX As Single = 0, gradY As Single = 0
+
+                For _y As Integer = Math.Max(0, y - pixAreaWidth) To Math.Min(y + pixAreaWidth, imageMatrix.GetLength(1) - 1)
+                    For _x As Integer = Math.Max(0, x - pixAreaWidth) To Math.Min(x + pixAreaWidth, imageMatrix.GetLength(0) - 1)
+                        gradX += grad1(x - _x + pixAreaWidth, y - _y + pixAreaWidth) * imageMatrix(_x, _y)
+                        gradY += grad2(x - _x + pixAreaWidth, y - _y + pixAreaWidth) * imageMatrix(_x, _y)
+                    Next _x
+                Next _y
+                newPix = Math.Sqrt(Math.Pow(gradX, 2) + Math.Pow(gradY, 2))
+                If newPix < 128 Then
+                    newPix = 0
+                End If
+                result(x, y) = CByte(Math.Max(Math.Min(newPix, CSng(Byte.MaxValue)), CSng(Byte.MinValue)))
+
+            Next x
+        Next y
+        Return result
+    End Function
+
+    Private _generalizationRange As Integer = 30
+    Public Sub handleFrameGener()
+        If IsNothing(SourceBitmap) Then Return
+        If IsNothing(bgBitmap) Then bgBitmap = SourceBitmap
+        If IsNothing(_bgGrayM) Then _bgGrayM = _sourceGrayM
+        Dim diffGrayM As GrayMatrix = _sourceGrayM
+        Dim generDiffGrayM As Byte(,) = New Byte(diffGrayM.Width - 1, diffGrayM.Height - 1) {}
+
+        Dim bgGray = _bgGrayM.Gray
+        StartX = Math.Max(StartX, 0)
+        StartY = Math.Max(StartY, 0)
+        Dim endX = Math.Min(diffGrayM.Width - 1, StartX + AreaWidth - 1)
+        Dim endY = Math.Min(diffGrayM.Height - 1, StartY + AreaHeight - 1)
+
+        Dim oldDiffPercent = _diffPercent
+        _diffPercent = 0
+
+        For y As Integer = 0 To diffGrayM.Height - 1
+            For x As Integer = 0 To diffGrayM.Width - 1
+                Dim bgPixVal = _bgGrayM.Gray(x, y)
+                Dim sPixVal = _sourceGrayM.Gray(x, y)
+                'Dim newVal = CInt(bgPixVal * _coeffBG / 100 + sPixVal * (1 - _coeffBG / 100))
+                Dim newVal = 0
+                If (Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > _diffThreshold) And
+                    (_numbFramesForBGLearning = 0) Then
+                    newVal = CInt(bgPixVal * (1 - _slowChange) + sPixVal * _slowChange)
+                Else
+                    newVal = CInt(bgPixVal * (1 - _fastChange) + sPixVal * _fastChange)
+                    If (_numbFramesForBGLearning > 0) Then _numbFramesForBGLearning -= 1
+                End If
+                _bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newVal, Byte.MinValue), Byte.MaxValue))
+
+                newVal = Math.Abs(CInt(sPixVal) - CInt(bgPixVal))
+                newVal = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+                diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+
+                If (newVal = Byte.MaxValue) And
+                    (y - _generalizationRange >= 0) And
+                    (x - _generalizationRange >= 0) Then
+                    Dim isAreaFullWhite = True
+                    For _y As Integer = y - _generalizationRange To y
+                        For _x As Integer = x - _generalizationRange To x
+                            If diffGrayM.Gray(_x, _y) = 0 Then
+                                isAreaFullWhite = False
+                                Exit For
+                            End If
+                        Next _x
+                        If Not isAreaFullWhite Then
+                            Exit For
+                        End If
+                    Next _y
+                    If isAreaFullWhite Then
+                        For _y As Integer = y - _generalizationRange To y
+                            For _x As Integer = x - _generalizationRange To x
+                                generDiffGrayM(_x, _y) = Byte.MaxValue
+                            Next _x
+                        Next _y
+                    End If
+                End If
+
+                'If x >= StartX And x <= endX And y >= StartY And y <= endY Then
+                '    newVal = Math.Abs(CInt(sPixVal) - CInt(bgPixVal))
+                '    diffGrayM.Gray(x, y) = IIf(newVal > _diffThreshold, Byte.MaxValue, Byte.MinValue)
+                '    _diffPercent += IIf(newVal > _diffThreshold, 1, 0)
+                'End If
+            Next x
+        Next y
+
+        _diffPercent /= (AreaWidth * AreaHeight)
+        If _diffPercent > (_maxDiff - _minDiff) / 2 Then
+            _maxDiff = _diffPercent * _fastChange + _maxDiff * (1 - _fastChange)
+            _minDiff = _diffPercent * _slowChange + _minDiff * (1 - _slowChange)
+        Else
+            _maxDiff = _diffPercent * _slowChange + _maxDiff * (1 - _slowChange)
+            _minDiff = _diffPercent * _fastChange + _minDiff * (1 - _fastChange)
+        End If
+        bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())
+        'DiffBitmap = New DisplayBitmap(diffGrayM.ToRGBMatrix.ToBitmap())
+        DiffBitmap = New DisplayBitmap((New GrayMatrix(generDiffGrayM)).ToRGBMatrix.ToBitmap())
+    End Sub
 End Class

@@ -41,6 +41,8 @@ Partial Class mainForm
         Me.Source_pb = New System.Windows.Forms.PictureBox()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
         Me.difference_pb = New System.Windows.Forms.PictureBox()
+        Me.mode = New System.Windows.Forms.ComboBox()
+        Me.mode_lbl = New System.Windows.Forms.Label()
         Me.Panel2.SuspendLayout()
         CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -69,6 +71,8 @@ Partial Class mainForm
         '
         'Panel2
         '
+        Me.Panel2.Controls.Add(Me.mode_lbl)
+        Me.Panel2.Controls.Add(Me.mode)
         Me.Panel2.Controls.Add(Me.Label4)
         Me.Panel2.Controls.Add(Me.Label3)
         Me.Panel2.Controls.Add(Me.Label2)
@@ -269,6 +273,26 @@ Partial Class mainForm
         Me.difference_pb.TabIndex = 1
         Me.difference_pb.TabStop = False
         '
+        'mode
+        '
+        Me.mode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
+        Me.mode.FormattingEnabled = True
+        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров", "Генерализация"})
+        Me.mode.Location = New System.Drawing.Point(253, 24)
+        Me.mode.Name = "mode"
+        Me.mode.Size = New System.Drawing.Size(217, 21)
+        Me.mode.TabIndex = 13
+        Me.mode.Text = "Процент разницы кадра с фоном"
+        '
+        'mode_lbl
+        '
+        Me.mode_lbl.AutoSize = True
+        Me.mode_lbl.Location = New System.Drawing.Point(250, 8)
+        Me.mode_lbl.Name = "mode_lbl"
+        Me.mode_lbl.Size = New System.Drawing.Size(87, 13)
+        Me.mode_lbl.TabIndex = 14
+        Me.mode_lbl.Text = "Режим анализа"
+        '
         'mainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -319,5 +343,7 @@ Partial Class mainForm
     Friend WithEvents areaH_nud As System.Windows.Forms.NumericUpDown
     Friend WithEvents areaW_nud As System.Windows.Forms.NumericUpDown
     Friend WithEvents y1_nud As System.Windows.Forms.NumericUpDown
+    Friend WithEvents mode_lbl As System.Windows.Forms.Label
+    Friend WithEvents mode As System.Windows.Forms.ComboBox
 
 End Class

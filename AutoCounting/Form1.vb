@@ -20,6 +20,7 @@ Public Class mainForm
         'lform.Height = 200
         lform.FormBorderStyle = FormBorderStyle.None
         lform.Show()
+        mode.SelectedIndex = 0
 
         _autoCountMethods.getFirstFrame()
 
@@ -54,7 +55,7 @@ Public Class mainForm
         _autoCountMethods.AreaWidth = areaW_nud.Value
         _autoCountMethods.AreaHeight = areaH_nud.Value
         thread = New Thread(AddressOf _autoCountMethods.start)
-        thread.Start()
+        thread.Start(mode.SelectedIndex)
     End Sub
 
     Public Function stopCalculations() As Boolean

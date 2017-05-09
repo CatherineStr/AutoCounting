@@ -23,3 +23,7 @@ C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imagi
 C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.pdb
 C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.xml
 C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\obj\Debug\AutoCounting.vbprojResolveAssemblyReference.cache
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\AutoCounting.exe.config
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.exe
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.xml
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.pdb

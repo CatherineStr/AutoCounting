@@ -1,5 +1,8 @@
 [Root]
 zoom=1
-defaultDirectory=C:\Users\Катя\Desktop\Work\записи с камер видеонаблюдения\2017-04-23-00.00.00.389-AST (23.04.2017 18-02-59)
+defaultDirectory=C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\Debug\18_08_2015_13_50_58_2__
 coeffBG=95
-diffThreshold=40
+diffThreshold=20
+fastSpeedChange=0,05
+slowSpeedChange=0
+generalizationRange=20
