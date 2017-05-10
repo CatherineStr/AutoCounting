@@ -21,6 +21,7 @@ Public Class AutoCountMethods
     Private _diffPercThreshold As Single = 0.5      'порог в диапазоне процентов разницы, при превышении которого производится инкремент количества машин
     Private _minDiff As Single = 0
     Private _maxDiff As Single = 1
+    Private _edgeThreshold
 
     Private _curFrame As UInteger = 0
     Private _numberCars As Integer = 0
@@ -158,6 +159,7 @@ Public Class AutoCountMethods
         _settingsStorageRoot.CreateDoubleSetting("fastSpeedChange", 0.05, "Скорость быстрого изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для быстрого обновления фона")
         _settingsStorageRoot.CreateDoubleSetting("slowSpeedChange", 0.005, "Скорость медленного изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для медленного обновления фона")
         _settingsStorageRoot.CreateIntegerSetting("generalizationRange", 20, "Степень генерализации", "Длина стороны квадратных блоков, которые выделяются на изображении при генерализации")
+        _settingsStorageRoot.CreateIntegerSetting("edgeThreshold", 128, "Порог контуров изображения", "(0-255) Применяется при обнаружении границ для бинаризации изображения, полученного при применении оператора Собеля.")
         _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
     End Sub
 
@@ -203,6 +205,7 @@ Public Class AutoCountMethods
         _fastChange = CSng(_settingsStorageRoot.FindSetting("fastSpeedChange").ValueAsString())
         _slowChange = CSng(_settingsStorageRoot.FindSetting("slowSpeedChange").ValueAsString())
         _generalizationRange = CInt(_settingsStorageRoot.FindSetting("generalizationRange").ValueAsString())
+        _edgeThreshold = CInt(_settingsStorageRoot.FindSetting("edgeThreshold").ValueAsString())
         sw.Start()
         Select Case mode
             Case 0
@@ -411,8 +414,10 @@ Public Class AutoCountMethods
                     Next _x
                 Next _y
                 newPix = Math.Sqrt(Math.Pow(gradX, 2) + Math.Pow(gradY, 2))
-                If newPix < 128 Then
+                If newPix < _edgeThreshold Then
                     newPix = 0
+                Else
+                    newPix = Byte.MaxValue
                 End If
                 result(x, y) = CByte(Math.Max(Math.Min(newPix, CSng(Byte.MaxValue)), CSng(Byte.MinValue)))
 

@@ -4,5 +4,5 @@ defaultDirectory=C:\Users\Катя\Desktop\Work\Git\AutoCounting\AutoCounting\bin\De
 coeffBG=95
 diffThreshold=20
 fastSpeedChange=0,05
-slowSpeedChange=0
+slowSpeedChange=0,005
 generalizationRange=20

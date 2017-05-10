@@ -27,3 +27,12 @@ C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\D
 C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.exe
 C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.xml
 C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.pdb
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\AutoCounting.exe
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\AutoCounting.pdb
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\AutoCounting.xml
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.pdb
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\bin\Debug\Bwl.Imaging.xml
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.vbprojResolveAssemblyReference.cache
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.mainForm.resources
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.Resources.resources
+C:\Users\Катя\Desktop\Work\Git\AutoCounting2\AutoCounting\AutoCounting\obj\Debug\AutoCounting.vbproj.GenerateResource.Cache
