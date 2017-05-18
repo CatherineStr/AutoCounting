@@ -6,6 +6,7 @@ Imports System.ComponentModel
 Public Class AutoCountMethods
     Private _logger As New Logger
     Private _settingsStorageRoot As New SettingsStorageRoot
+    Private _defaultDir As String
     Private _files As String()
 
     Private _sourceBitmap As DisplayBitmap
@@ -38,6 +39,15 @@ Public Class AutoCountMethods
         Get
             Return _logger
         End Get
+    End Property
+
+    Public Property defaultDir As String
+        Get
+            Return _defaultDir
+        End Get
+        Set(value As String)
+            _defaultDir = value
+        End Set
     End Property
 
     Public ReadOnly Property Zoom As Double
@@ -153,26 +163,25 @@ Public Class AutoCountMethods
     Public Sub New()
         _settingsStorageRoot.DefaultWriter = New IniFileSettingsWriter("parameters.ini")
         '_settingsStorageRoot.CreateDoubleSetting("zoom", 0.5)
-        _settingsStorageRoot.CreateStringSetting("defaultDirectory", Application.StartupPath + "\18_08_2015_13_50_58_2__", "Директория по умолчанию", "Директория, из которой загружаются изображения")
+        '_settingsStorageRoot.CreateStringSetting("defaultDirectory", Application.StartupPath + "\18_08_2015_13_50_58_2__", "Директория по умолчанию", "Директория, из которой загружаются изображения")
         '_settingsStorageRoot.CreateIntegerSetting("coeffBG", 95, "Процент фона", "Процент от старого фона, который берётся для формирования обновлённого фона")
         _settingsStorageRoot.CreateIntegerSetting("diffThreshold", 50, "Порог разницы", "Порог разницы пикселей, при превышении которого новый пиксель устанавливается белым")
         _settingsStorageRoot.CreateDoubleSetting("fastSpeedChange", 0.05, "Скорость быстрого изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для быстрого обновления фона")
         _settingsStorageRoot.CreateDoubleSetting("slowSpeedChange", 0.005, "Скорость медленного изменения фона", "Коэффициент, на который умножается каждый пиксель нового кадра для медленного обновления фона")
         _settingsStorageRoot.CreateIntegerSetting("generalizationRange", 20, "Степень генерализации", "Длина стороны квадратных блоков, которые выделяются на изображении при генерализации")
         _settingsStorageRoot.CreateIntegerSetting("edgeThreshold", 128, "Порог контуров изображения", "(0-255) Применяется при обнаружении границ для бинаризации изображения, полученного при применении оператора Собеля.")
-        _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
+        '_files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg") 'Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
     End Sub
 
     Public Sub getFirstFrame()
         _curFrame = 0
         _numberCars = 0
 
+        _files = Directory.GetFiles(_defaultDir, "*.jpg")
         Dim source As Bitmap
         Try
             source = New Bitmap(_files(_curFrame))
         Catch
-            _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
-            _curFrame = 0
             If (_curFrame = (_files.Length - 1)) Then Return
             source = New Bitmap(_files(_curFrame))
         End Try
@@ -191,7 +200,7 @@ Public Class AutoCountMethods
         Try
             source = New Bitmap(_files(_curFrame))
         Catch
-            _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
+            _files = Directory.GetFiles(_defaultDir, "*.jpg")
             _curFrame = 0
             If (_curFrame = (_files.Length - 1)) Then Return
             source = New Bitmap(_files(_curFrame))
@@ -245,7 +254,9 @@ Public Class AutoCountMethods
     End Sub
 
     Public Sub start(mode As Integer)
-        _files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
+        '_files = Directory.GetFiles(_settingsStorageRoot.FindSetting("defaultDirectory").ValueAsString(), "*.jpg")
+
+        getFirstFrame()
         For i As Integer = _curFrame To _files.Length
             If (StopFlag) Then
                 i -= 1
@@ -480,7 +491,9 @@ Public Class AutoCountMethods
                     If isAreaFullWhite Then
                         For _y As Integer = y - _generalizationRange To y
                             For _x As Integer = x - _generalizationRange To x
-                                generDiffGrayM(_x, _y) = Byte.MaxValue
+                                If Not (generDiffGrayM(_x, _y) = Byte.MaxValue) Then
+                                    generDiffGrayM(_x, _y) = Byte.MaxValue
+                                End If
                             Next _x
                         Next _y
                     End If

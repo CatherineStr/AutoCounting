@@ -104,4 +104,13 @@ Public Class mainForm
             Me.areaH_nud.Maximum = _autoCountMethods.bgBitmap.Height - y1_nud.Value
         End If
     End Sub
+
+    Private Sub sourceDir_btn_Click(sender As Object, e As EventArgs) Handles sourceDir_btn.Click
+        If Not stopCalculations() Then Return
+        Dim dialog = New FolderBrowserDialog()
+        If (dialog.ShowDialog() = Windows.Forms.DialogResult.OK) Then
+            _autoCountMethods.defaultDir = dialog.SelectedPath
+            _autoCountMethods.getFirstFrame()
+        End If
+    End Sub
 End Class

@@ -24,6 +24,8 @@ Partial Class mainForm
     Private Sub InitializeComponent()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.mode_lbl = New System.Windows.Forms.Label()
+        Me.mode = New System.Windows.Forms.ComboBox()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -41,8 +43,7 @@ Partial Class mainForm
         Me.Source_pb = New System.Windows.Forms.PictureBox()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
         Me.difference_pb = New System.Windows.Forms.PictureBox()
-        Me.mode = New System.Windows.Forms.ComboBox()
-        Me.mode_lbl = New System.Windows.Forms.Label()
+        Me.sourceDir_btn = New System.Windows.Forms.Button()
         Me.Panel2.SuspendLayout()
         CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -71,6 +72,7 @@ Partial Class mainForm
         '
         'Panel2
         '
+        Me.Panel2.Controls.Add(Me.sourceDir_btn)
         Me.Panel2.Controls.Add(Me.mode_lbl)
         Me.Panel2.Controls.Add(Me.mode)
         Me.Panel2.Controls.Add(Me.Label4)
@@ -90,6 +92,26 @@ Partial Class mainForm
         Me.Panel2.Name = "Panel2"
         Me.Panel2.Size = New System.Drawing.Size(1160, 51)
         Me.Panel2.TabIndex = 3
+        '
+        'mode_lbl
+        '
+        Me.mode_lbl.AutoSize = True
+        Me.mode_lbl.Location = New System.Drawing.Point(250, 8)
+        Me.mode_lbl.Name = "mode_lbl"
+        Me.mode_lbl.Size = New System.Drawing.Size(87, 13)
+        Me.mode_lbl.TabIndex = 14
+        Me.mode_lbl.Text = "Режим анализа"
+        '
+        'mode
+        '
+        Me.mode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
+        Me.mode.FormattingEnabled = True
+        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров", "Генерализация"})
+        Me.mode.Location = New System.Drawing.Point(253, 24)
+        Me.mode.Name = "mode"
+        Me.mode.Size = New System.Drawing.Size(217, 21)
+        Me.mode.TabIndex = 13
+        Me.mode.Text = "Процент разницы кадра с фоном"
         '
         'Label4
         '
@@ -273,25 +295,15 @@ Partial Class mainForm
         Me.difference_pb.TabIndex = 1
         Me.difference_pb.TabStop = False
         '
-        'mode
+        'sourceDir_btn
         '
-        Me.mode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
-        Me.mode.FormattingEnabled = True
-        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров", "Генерализация"})
-        Me.mode.Location = New System.Drawing.Point(253, 24)
-        Me.mode.Name = "mode"
-        Me.mode.Size = New System.Drawing.Size(217, 21)
-        Me.mode.TabIndex = 13
-        Me.mode.Text = "Процент разницы кадра с фоном"
-        '
-        'mode_lbl
-        '
-        Me.mode_lbl.AutoSize = True
-        Me.mode_lbl.Location = New System.Drawing.Point(250, 8)
-        Me.mode_lbl.Name = "mode_lbl"
-        Me.mode_lbl.Size = New System.Drawing.Size(87, 13)
-        Me.mode_lbl.TabIndex = 14
-        Me.mode_lbl.Text = "Режим анализа"
+        Me.sourceDir_btn.Dock = System.Windows.Forms.DockStyle.Right
+        Me.sourceDir_btn.Location = New System.Drawing.Point(1010, 0)
+        Me.sourceDir_btn.Name = "sourceDir_btn"
+        Me.sourceDir_btn.Size = New System.Drawing.Size(75, 51)
+        Me.sourceDir_btn.TabIndex = 15
+        Me.sourceDir_btn.Text = "Исходная директория"
+        Me.sourceDir_btn.UseVisualStyleBackColor = True
         '
         'mainForm
         '
@@ -345,5 +357,6 @@ Partial Class mainForm
     Friend WithEvents y1_nud As System.Windows.Forms.NumericUpDown
     Friend WithEvents mode_lbl As System.Windows.Forms.Label
     Friend WithEvents mode As System.Windows.Forms.ComboBox
+    Friend WithEvents sourceDir_btn As System.Windows.Forms.Button
 
 End Class
