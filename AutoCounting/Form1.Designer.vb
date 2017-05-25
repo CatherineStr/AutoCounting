@@ -44,6 +44,8 @@ Partial Class mainForm
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
         Me.difference_pb = New System.Windows.Forms.PictureBox()
         Me.sourceDir_btn = New System.Windows.Forms.Button()
+        Me.SplitContainer3 = New System.Windows.Forms.SplitContainer()
+        Me.accumulator_pb = New System.Windows.Forms.PictureBox()
         Me.Panel2.SuspendLayout()
         CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.areaW_nud, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -60,6 +62,11 @@ Partial Class mainForm
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.SplitContainer3, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.SplitContainer3.Panel1.SuspendLayout()
+        Me.SplitContainer3.Panel2.SuspendLayout()
+        Me.SplitContainer3.SuspendLayout()
+        CType(Me.accumulator_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Panel1
@@ -239,7 +246,7 @@ Partial Class mainForm
         '
         'SplitContainer1.Panel2
         '
-        Me.SplitContainer1.Panel2.Controls.Add(Me.difference_pb)
+        Me.SplitContainer1.Panel2.Controls.Add(Me.SplitContainer3)
         Me.SplitContainer1.Size = New System.Drawing.Size(1160, 439)
         Me.SplitContainer1.SplitterDistance = 579
         Me.SplitContainer1.TabIndex = 4
@@ -290,7 +297,7 @@ Partial Class mainForm
         Me.difference_pb.Dock = System.Windows.Forms.DockStyle.Fill
         Me.difference_pb.Location = New System.Drawing.Point(0, 0)
         Me.difference_pb.Name = "difference_pb"
-        Me.difference_pb.Size = New System.Drawing.Size(577, 439)
+        Me.difference_pb.Size = New System.Drawing.Size(577, 216)
         Me.difference_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
         Me.difference_pb.TabIndex = 1
         Me.difference_pb.TabStop = False
@@ -304,6 +311,35 @@ Partial Class mainForm
         Me.sourceDir_btn.TabIndex = 15
         Me.sourceDir_btn.Text = "Исходная директория"
         Me.sourceDir_btn.UseVisualStyleBackColor = True
+        '
+        'SplitContainer3
+        '
+        Me.SplitContainer3.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.SplitContainer3.Location = New System.Drawing.Point(0, 0)
+        Me.SplitContainer3.Name = "SplitContainer3"
+        Me.SplitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal
+        '
+        'SplitContainer3.Panel1
+        '
+        Me.SplitContainer3.Panel1.Controls.Add(Me.difference_pb)
+        '
+        'SplitContainer3.Panel2
+        '
+        Me.SplitContainer3.Panel2.Controls.Add(Me.accumulator_pb)
+        Me.SplitContainer3.Size = New System.Drawing.Size(577, 439)
+        Me.SplitContainer3.SplitterDistance = 216
+        Me.SplitContainer3.TabIndex = 2
+        '
+        'accumulator_pb
+        '
+        Me.accumulator_pb.BackColor = System.Drawing.SystemColors.AppWorkspace
+        Me.accumulator_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.accumulator_pb.Location = New System.Drawing.Point(0, 0)
+        Me.accumulator_pb.Name = "accumulator_pb"
+        Me.accumulator_pb.Size = New System.Drawing.Size(577, 219)
+        Me.accumulator_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.accumulator_pb.TabIndex = 2
+        Me.accumulator_pb.TabStop = False
         '
         'mainForm
         '
@@ -333,11 +369,14 @@ Partial Class mainForm
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.SplitContainer3.Panel1.ResumeLayout(False)
+        Me.SplitContainer3.Panel2.ResumeLayout(False)
+        CType(Me.SplitContainer3, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.SplitContainer3.ResumeLayout(False)
+        CType(Me.accumulator_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents Panel1 As System.Windows.Forms.Panel
-    Friend WithEvents Panel2 As System.Windows.Forms.Panel
     Friend WithEvents SplitContainer1 As System.Windows.Forms.SplitContainer
     Friend WithEvents break_btn As System.Windows.Forms.Button
     Friend WithEvents start_btn As System.Windows.Forms.Button
@@ -358,5 +397,9 @@ Partial Class mainForm
     Friend WithEvents mode_lbl As System.Windows.Forms.Label
     Friend WithEvents mode As System.Windows.Forms.ComboBox
     Friend WithEvents sourceDir_btn As System.Windows.Forms.Button
+    Friend WithEvents Panel1 As System.Windows.Forms.Panel
+    Friend WithEvents Panel2 As System.Windows.Forms.Panel
+    Friend WithEvents SplitContainer3 As System.Windows.Forms.SplitContainer
+    Friend WithEvents accumulator_pb As System.Windows.Forms.PictureBox
 
 End Class

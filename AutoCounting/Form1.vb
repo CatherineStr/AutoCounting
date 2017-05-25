@@ -13,6 +13,7 @@ Public Class mainForm
         AddHandler _autoCountMethods.sourceImgChanged, AddressOf sourceImgChanged
         AddHandler _autoCountMethods.bgImgChanged, AddressOf bgImgChanged
         AddHandler _autoCountMethods.diffImgChanged, AddressOf diffImgChanged
+        AddHandler _autoCountMethods.accumImgChanged, AddressOf accumImgChanged
         lform = New LoggerForm(_autoCountMethods.Logger)
         lform.MdiParent = Me
         Me.Panel1.Controls.Add(Me.lform)
@@ -22,7 +23,7 @@ Public Class mainForm
         lform.Show()
         mode.SelectedIndex = 0
 
-        _autoCountMethods.getFirstFrame()
+        '_autoCountMethods.getFirstFrame()
 
     End Sub
 
@@ -41,6 +42,10 @@ Public Class mainForm
 
     Private Sub diffImgChanged(ByVal sender As Object, ByVal e As EventArgs)
         Me.difference_pb.Image = _autoCountMethods.DiffBitmap.Bitmap
+    End Sub
+
+    Private Sub accumImgChanged(ByVal sender As Object, ByVal e As EventArgs)
+        Me.accumulator_pb.Image = _autoCountMethods.AccumBitmap.Bitmap
     End Sub
 
     Private Sub start_btn_Click(sender As Object, e As EventArgs) Handles start_btn.Click
