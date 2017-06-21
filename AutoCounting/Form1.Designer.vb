@@ -24,6 +24,7 @@ Partial Class mainForm
     Private Sub InitializeComponent()
         Me.Panel1 = New System.Windows.Forms.Panel()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.sourceDir_btn = New System.Windows.Forms.Button()
         Me.mode_lbl = New System.Windows.Forms.Label()
         Me.mode = New System.Windows.Forms.ComboBox()
         Me.Label4 = New System.Windows.Forms.Label()
@@ -42,9 +43,8 @@ Partial Class mainForm
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.Source_pb = New System.Windows.Forms.PictureBox()
         Me.PictureBox2 = New System.Windows.Forms.PictureBox()
-        Me.difference_pb = New System.Windows.Forms.PictureBox()
-        Me.sourceDir_btn = New System.Windows.Forms.Button()
         Me.SplitContainer3 = New System.Windows.Forms.SplitContainer()
+        Me.difference_pb = New System.Windows.Forms.PictureBox()
         Me.accumulator_pb = New System.Windows.Forms.PictureBox()
         Me.Panel2.SuspendLayout()
         CType(Me.areaH_nud, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -61,11 +61,11 @@ Partial Class mainForm
         Me.SplitContainer2.SuspendLayout()
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer3, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer3.Panel1.SuspendLayout()
         Me.SplitContainer3.Panel2.SuspendLayout()
         Me.SplitContainer3.SuspendLayout()
+        CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.accumulator_pb, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -100,6 +100,16 @@ Partial Class mainForm
         Me.Panel2.Size = New System.Drawing.Size(1160, 51)
         Me.Panel2.TabIndex = 3
         '
+        'sourceDir_btn
+        '
+        Me.sourceDir_btn.Dock = System.Windows.Forms.DockStyle.Right
+        Me.sourceDir_btn.Location = New System.Drawing.Point(1010, 0)
+        Me.sourceDir_btn.Name = "sourceDir_btn"
+        Me.sourceDir_btn.Size = New System.Drawing.Size(75, 51)
+        Me.sourceDir_btn.TabIndex = 15
+        Me.sourceDir_btn.Text = "Исходная директория"
+        Me.sourceDir_btn.UseVisualStyleBackColor = True
+        '
         'mode_lbl
         '
         Me.mode_lbl.AutoSize = True
@@ -113,7 +123,7 @@ Partial Class mainForm
         '
         Me.mode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
         Me.mode.FormattingEnabled = True
-        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров", "Генерализация"})
+        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров + Хаф", "HOG", "Генерализация"})
         Me.mode.Location = New System.Drawing.Point(253, 24)
         Me.mode.Name = "mode"
         Me.mode.Size = New System.Drawing.Size(217, 21)
@@ -291,27 +301,6 @@ Partial Class mainForm
         Me.PictureBox2.TabIndex = 0
         Me.PictureBox2.TabStop = False
         '
-        'difference_pb
-        '
-        Me.difference_pb.BackColor = System.Drawing.SystemColors.AppWorkspace
-        Me.difference_pb.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.difference_pb.Location = New System.Drawing.Point(0, 0)
-        Me.difference_pb.Name = "difference_pb"
-        Me.difference_pb.Size = New System.Drawing.Size(577, 216)
-        Me.difference_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
-        Me.difference_pb.TabIndex = 1
-        Me.difference_pb.TabStop = False
-        '
-        'sourceDir_btn
-        '
-        Me.sourceDir_btn.Dock = System.Windows.Forms.DockStyle.Right
-        Me.sourceDir_btn.Location = New System.Drawing.Point(1010, 0)
-        Me.sourceDir_btn.Name = "sourceDir_btn"
-        Me.sourceDir_btn.Size = New System.Drawing.Size(75, 51)
-        Me.sourceDir_btn.TabIndex = 15
-        Me.sourceDir_btn.Text = "Исходная директория"
-        Me.sourceDir_btn.UseVisualStyleBackColor = True
-        '
         'SplitContainer3
         '
         Me.SplitContainer3.Dock = System.Windows.Forms.DockStyle.Fill
@@ -329,6 +318,17 @@ Partial Class mainForm
         Me.SplitContainer3.Size = New System.Drawing.Size(577, 439)
         Me.SplitContainer3.SplitterDistance = 216
         Me.SplitContainer3.TabIndex = 2
+        '
+        'difference_pb
+        '
+        Me.difference_pb.BackColor = System.Drawing.SystemColors.AppWorkspace
+        Me.difference_pb.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.difference_pb.Location = New System.Drawing.Point(0, 0)
+        Me.difference_pb.Name = "difference_pb"
+        Me.difference_pb.Size = New System.Drawing.Size(577, 216)
+        Me.difference_pb.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.difference_pb.TabIndex = 1
+        Me.difference_pb.TabStop = False
         '
         'accumulator_pb
         '
@@ -368,11 +368,11 @@ Partial Class mainForm
         Me.SplitContainer2.ResumeLayout(False)
         CType(Me.Source_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.PictureBox2, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer3.Panel1.ResumeLayout(False)
         Me.SplitContainer3.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer3, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer3.ResumeLayout(False)
+        CType(Me.difference_pb, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.accumulator_pb, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 

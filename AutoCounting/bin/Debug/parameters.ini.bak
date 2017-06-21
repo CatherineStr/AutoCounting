@@ -7,5 +7,5 @@ fastSpeedChange=0,05
 slowSpeedChange=0,005
 generalizationRange=20
 edgeThreshold=180
-minPointsInLine=150
-degreeStep=3
+minPointsInLine=90
+degreeStep=5

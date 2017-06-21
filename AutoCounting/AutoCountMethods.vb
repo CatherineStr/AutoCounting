@@ -242,6 +242,7 @@ Public Class AutoCountMethods
         End Try
         _sourceGrayM = BitmapConverter.BitmapToGrayMatrix(source)
         _sourceGrayM = New GrayMatrix(_sourceGrayM.ResizeMatrixHalf(_sourceGrayM.Gray))
+        _sourceGrayM = New GrayMatrix(_sourceGrayM.ResizeMatrixHalf(_sourceGrayM.Gray))
         SourceBitmap = New DisplayBitmap(_sourceGrayM.ToRGBMatrix.ToBitmap)
         'Dim sw = New Stopwatch()
         '_coeffBG = CInt(_settingsStorageRoot.FindSetting("coeffBG").ValueAsString())
@@ -257,6 +258,8 @@ Public Class AutoCountMethods
             Case 1
                 handleFrameEdges()
             Case 2
+                handleFrameHOG()
+            Case 3
                 handleFrameGener()
         End Select
 
@@ -453,9 +456,9 @@ Public Class AutoCountMethods
                     Dim cos = Math.Cos(angle * Math.PI / 180)
                     Dim sin = Math.Sin(angle * Math.PI / 180)
                     Dim rad = CInt((x) * cos + (y) * sin) + numRad / 2
-                    If accumulator(rad, angle + 90) < 255 Then
-                        accumulator(rad, angle + 90) += 1
-                        If (accumulator(rad, angle + 90) >= minPointsInLine) And (Not accumMarks(rad, angle + 90)) Then
+                    If accumulator(rad, angle + 90) < 253 Then
+                        accumulator(rad, angle + 90) += 3
+                        If (accumulator(rad, angle + 90) / 3 >= minPointsInLine) And (Not accumMarks(rad, angle + 90)) Then
                             accumMarks(rad, angle + 90) = True
                             countStraightLines += 1
                             For _x As Integer = 0 To endX - StartX
@@ -501,6 +504,7 @@ Public Class AutoCountMethods
         Dim accumGrayM = New GrayMatrix(accumulator)
         DiffBitmap = New DisplayBitmap((New RGBMatrix(r, gb, gb)).ToBitmap())
         AccumBitmap = New DisplayBitmap(accumGrayM.ToRGBMatrix.ToBitmap())
+        'bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())
         sw.Stop()
         Logger.AddInformation("кадр " + _curFrame.ToString() + " обработан за " + sw.Elapsed.ToString() + "   количество прямых " + countStraightLines.ToString())
     End Sub
@@ -517,7 +521,7 @@ Public Class AutoCountMethods
         Dim len1 = imageMatrix.GetLength(1)
         For y As Integer = 0 To imageMatrix.GetLength(1) - 1
             For x As Integer = 0 To imageMatrix.GetLength(0) - 1
-                Dim newPix As Single = 0, gradX As Single = 0, gradY As Single = 0
+                Dim newEdgePix As Single = 0, gradX As Single = 0, gradY As Single = 0
 
                 For _y As Integer = Math.Max(0, y - pixAreaWidth) To Math.Min(y + pixAreaWidth, imageMatrix.GetLength(1) - 1)
                     For _x As Integer = Math.Max(0, x - pixAreaWidth) To Math.Min(x + pixAreaWidth, imageMatrix.GetLength(0) - 1)
@@ -525,18 +529,176 @@ Public Class AutoCountMethods
                         gradY += grad2(x - _x + pixAreaWidth, y - _y + pixAreaWidth) * imageMatrix(_x, _y)
                     Next _x
                 Next _y
-                newPix = Math.Sqrt(Math.Pow(gradX, 2) + Math.Pow(gradY, 2))
-                If newPix < _edgeThreshold Then
-                    newPix = 0
+                newEdgePix = Math.Sqrt(Math.Pow(gradX, 2) + Math.Pow(gradY, 2))
+                If newEdgePix < _edgeThreshold Then
+                    newEdgePix = 0
                 Else
-                    newPix = Byte.MaxValue
+                    newEdgePix = Byte.MaxValue
                 End If
-                result(x, y) = CByte(Math.Max(Math.Min(newPix, CSng(Byte.MaxValue)), CSng(Byte.MinValue)))
 
+                result(x, y) = CByte(Math.Max(Math.Min(newEdgePix, CSng(Byte.MaxValue)), CSng(Byte.MinValue)))
+
+                'Dim bgPixVal = _bgGrayM.Gray(x, y)
+                'Dim sPixVal = _sourceGrayM.Gray(x, y)
+                'Dim newBgVal As Single
+                'If (Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > _diffThreshold) And
+                '            (_numbFramesForBGLearning = 0) Then
+                '    newBgVal = bgPixVal * (1 - _slowChange) + sPixVal * _slowChange
+                'Else
+                '    newBgVal = bgPixVal * (1 - _fastChange) + sPixVal * _fastChange
+                '    If (_numbFramesForBGLearning > 0) Then _numbFramesForBGLearning -= 1
+                'End If
+                '_bgGrayM.Gray(x, y) = CByte(Math.Min(Math.Max(newBgVal, CSng(Byte.MinValue)), Byte.MaxValue))
+
+                'If (Math.Abs(CInt(sPixVal) - CInt(bgPixVal)) > _diffThreshold) And (newEdgePix >= _edgeThreshold) Then
+                '    newEdgePix = Byte.MaxValue
+                'Else
+                '    newEdgePix = 0
+                'End If
+                'result(x, y) = CByte(Math.Max(Math.Min(newEdgePix, CSng(Byte.MaxValue)), CSng(Byte.MinValue)))
             Next x
         Next y
         Return result
     End Function
+
+    Public Sub handleFrameHOG()
+        Dim sw = New Stopwatch()
+        Dim handlingTime = New TimeSpan(0)
+        sw.Start()
+        If IsNothing(SourceBitmap) Then Return
+        If IsNothing(bgBitmap) Then bgBitmap = SourceBitmap
+        If IsNothing(_bgGrayM) Then _bgGrayM = _sourceGrayM
+        Dim diffGrayM As GrayMatrix = _sourceGrayM
+
+        'Dim pixAreaWidth = 1
+        Dim cellWidth = 8 'pixAreaWidth * 2 + 1
+        Dim blockWidth = cellWidth * 2
+
+        Dim sourceGrM = _sourceGrayM.Gray
+        Dim bgGray = _bgGrayM.Gray
+        Dim r = sourceGrM.Clone()
+        Dim gb = sourceGrM.Clone()
+        If ((sourceGrM.GetLength(0) \ cellWidth) < 1) Or ((sourceGrM.GetLength(1) \ cellWidth) < 1) Then Return
+
+        Dim magnitudes = New Single(sourceGrM.GetLength(0) - 1, sourceGrM.GetLength(1) - 1) {}
+        Dim directions = New Single(sourceGrM.GetLength(0) - 1, sourceGrM.GetLength(1) - 1) {}
+        Dim histogram = New Single((sourceGrM.GetLength(0) \ cellWidth) - 1, (sourceGrM.GetLength(1) \ cellWidth) - 1, 8) {}
+        Dim histAnglesCos = New Single(histogram.GetLength(2) - 1) {}
+        Dim histAnglesSin = New Single(histogram.GetLength(2) - 1) {}
+        For histInd As Integer = 0 To histogram.GetLength(2) - 1
+            histAnglesCos(histInd) = Math.Cos(histInd * 20 * Math.PI / 180)
+            histAnglesSin(histInd) = Math.Sin(histInd * 20 * Math.PI / 180)
+        Next histInd
+
+        'StartX = Math.Max(StartX, 0)
+        'StartY = Math.Max(StartY, 0)
+        'Dim endX = Math.Min(diffGrayM.Width - 1, StartX + AreaWidth - 1)
+        'Dim endY = Math.Min(diffGrayM.Height - 1, StartY + AreaHeight - 1)
+        'Dim numAngles As Integer = 179 'CInt(Math.PI / 90)
+        'Dim numRad = 2 * CInt(Math.Sqrt(2 * (Math.Pow(endX - StartX, 2) + Math.Pow(endY - StartY, 2))))
+        'While (numRad + 1) Mod 4 <> 0
+        '    numRad += 1
+        'End While
+        'Dim minPointsInLine = CInt(_settingsStorageRoot.FindSetting("minPointsInLine").ValueAsString()) 'Math.Min(endX - StartX, endY - StartY)  'CInt(Math.Sqrt(Math.Pow(endX - StartX, 2) + Math.Pow(endY - StartY, 2)) / 2)
+        'Dim stp = CInt(_settingsStorageRoot.FindSetting("degreeStep").ValueAsString())
+        'Dim accumulator = New Byte(numRad, numAngles) {}
+        'Dim accumMarks = New Boolean(numRad, numAngles) {}
+        'Dim lineParams As ArrayList = New ArrayList()
+        'Dim oldDiffPercent = _diffPercent
+        '_diffPercent = 0
+
+        For y As Integer = 0 To (sourceGrM.GetLength(1) \ cellWidth) * cellWidth - 1 'sourceGrM.GetLength(1) - 2
+            For x As Integer = 0 To (sourceGrM.GetLength(0) \ cellWidth) * cellWidth - 1
+
+                'For _y As Integer = Math.Max(0, y - pixAreaWidth) To Math.Min(y + pixAreaWidth, imageMatrix.GetLength(1) - 1)
+                '    For _x As Integer = Math.Max(0, x - pixAreaWidth) To Math.Min(x + pixAreaWidth, imageMatrix.GetLength(0) - 1)
+                '        gradX += grad1(x - _x + pixAreaWidth, y - _y + pixAreaWidth) * imageMatrix(_x, _y)
+                '        gradY += grad2(x - _x + pixAreaWidth, y - _y + pixAreaWidth) * imageMatrix(_x, _y)
+                '    Next _x
+                'Next _y
+                Dim gradY As Integer
+                If (y = 0) Or (y = sourceGrM.GetLength(1) - 1) Then
+                    gradY = 0
+                Else : gradY = Math.Abs(CInt(sourceGrM(x, y - 1)) - CInt(sourceGrM(x, y + 1)))
+                End If
+
+                Dim gradX As Integer
+                If (x = 0) Or (x = sourceGrM.GetLength(0) - 1) Then
+                    gradX = 0
+                Else : gradX = Math.Abs(CInt(sourceGrM(x - 1, y)) - CInt(sourceGrM(x + 1, y)))
+                End If
+
+                magnitudes(x, y) = CSng(Math.Sqrt(gradY * gradY + gradX * gradX))
+                If gradX <> 0 Then
+                    directions(x, y) = CSng(Math.Atan(gradY / gradX) * 180 / Math.PI)
+                Else : directions(x, y) = 90
+                End If
+
+                If ((x + 1) Mod cellWidth <> 0) Or ((y + 1) Mod cellWidth <> 0) Then Continue For
+
+
+
+                'fill histogram of cell
+                Dim histX = (x + 1) \ cellWidth - 1
+                Dim histY = (y + 1) \ cellWidth - 1
+
+                For _y As Integer = (y + 1 - cellWidth) To y
+                    For _x As Integer = (x + 1 - cellWidth) To x
+
+                        Dim histInd = directions(x, y) \ 20
+                        Dim magnPercent = (magnitudes(x, y) Mod 20) / 20
+
+                        histogram(histX, histY, histInd) += magnitudes(_x, _y) * magnPercent
+                        If histInd = 160 Then
+                            histogram(histX, histY, 0) += magnitudes(_x, _y) * (1 - magnPercent)
+                        Else : histogram(histX, histY, histInd + 1) += magnitudes(_x, _y) * (1 - magnPercent)
+                        End If
+                    Next _x
+                Next _y
+
+                handlingTime += sw.Elapsed
+
+                'histogram visualisation
+                Dim resX As Single
+                Dim resY As Single
+                Dim histLen As Single
+
+                For histInd As Integer = 0 To histogram.GetLength(2) - 1
+                    histLen += Math.Pow(histogram(histX, histY, histInd), 2)
+                Next histInd
+                histLen = CSng(Math.Sqrt(histLen))
+
+                For histInd As Integer = 0 To histogram.GetLength(2) - 1
+                    resX += histAnglesCos(histInd) * histogram(histX, histY, histInd) / histLen
+                    resY += histAnglesSin(histInd) * histogram(histX, histY, histInd) / histLen
+                Next histInd
+
+                Dim x0 = (x + 1 - cellWidth / 2)
+                Dim y0 = (y + 1 - cellWidth / 2)
+                For _x As Integer = (x + 1 - cellWidth) To x
+                    Dim _y As Integer
+                    If (resX - x0) <> 0 Then
+                        _y = CInt((_x - x0) * (resY - y0) / (resX - x0) + y0)
+                    Else : _y = CInt(resY + y0)
+                    End If
+
+                    If (_y >= (y + 1 - cellWidth)) And (_y <= y) Then
+                        r(_x, _y) = Byte.MaxValue
+                        gb(_x, _y) = Byte.MinValue
+                    End If
+                Next _x
+                'end of histogram visualisation
+                sw.Restart()
+            Next x
+        Next y
+
+        'Dim accumGrayM = New GrayMatrix(accumulator)
+        DiffBitmap = New DisplayBitmap((New RGBMatrix(r, gb, gb)).ToBitmap())
+        'AccumBitmap = New DisplayBitmap(accumGrayM.ToRGBMatrix.ToBitmap())
+        'bgBitmap = New DisplayBitmap(_bgGrayM.ToRGBMatrix.ToBitmap())
+        sw.Stop()
+        Logger.AddInformation("кадр " + _curFrame.ToString() + " обработан за " + handlingTime.ToString())
+    End Sub
 
     Private _generalizationRange As Integer = 30
     Public Sub handleFrameGener()
