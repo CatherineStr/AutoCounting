@@ -82,12 +82,18 @@ Public Class mainForm
     End Function
 
     Private Sub break_btn_Click(sender As Object, e As EventArgs) Handles break_btn.Click
+
         If Not stopCalculations() Then Return
         _autoCountMethods.break()
+        If _autoCountMethods.StopFlag Then
+            _autoCountMethods.StopFlag = False
+            Return
+        End If
     End Sub
 
     Private Sub Stop_btn_Click(sender As Object, e As EventArgs) Handles Stop_btn.Click
         _autoCountMethods.StopFlag = True
+
     End Sub
 
     Private Sub settings_btn_Click(sender As Object, e As EventArgs) Handles settings_btn.Click

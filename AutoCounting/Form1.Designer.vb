@@ -123,7 +123,7 @@ Partial Class mainForm
         '
         Me.mode.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest
         Me.mode.FormattingEnabled = True
-        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров + Хаф", "HOG", "Генерализация"})
+        Me.mode.Items.AddRange(New Object() {"Процент разницы кадра с фоном", "Выделение контуров + прямые", "HOG", "Генерализация"})
         Me.mode.Location = New System.Drawing.Point(253, 24)
         Me.mode.Name = "mode"
         Me.mode.Size = New System.Drawing.Size(217, 21)
@@ -193,7 +193,6 @@ Partial Class mainForm
         Me.y1_nud.Name = "y1_nud"
         Me.y1_nud.Size = New System.Drawing.Size(68, 20)
         Me.y1_nud.TabIndex = 6
-        Me.y1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
         '
         'x1_nud
         '
@@ -202,7 +201,6 @@ Partial Class mainForm
         Me.x1_nud.Name = "x1_nud"
         Me.x1_nud.Size = New System.Drawing.Size(68, 20)
         Me.x1_nud.TabIndex = 5
-        Me.x1_nud.Value = New Decimal(New Integer() {180, 0, 0, 0})
         '
         'settings_btn
         '
