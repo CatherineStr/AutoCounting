@@ -642,6 +642,7 @@ Public Class AutoCountMethods
                     gradX = 0
                 Else : gradX = Math.Abs(CInt(sourceGrM(x - 1, y)) - CInt(sourceGrM(x + 1, y)))
                 End If
+
                 magnitudes(x, y) = CSng(Math.Sqrt(gradY * gradY + gradX * gradX))
                 If gradX <> 0 Then
                     directions(x, y) = CSng(Math.Atan(gradY / gradX) * 180 / Math.PI)
@@ -670,7 +671,7 @@ Public Class AutoCountMethods
                             histogram(histX, histY, 0) += magnitudes(_x, _y) * (1 - magnPercent)
                         Else : histogram(histX, histY, histInd + 1) += magnitudes(_x, _y) * (1 - magnPercent)
                         End If
-                        histStr += Math.Round(histogram(histX, histY, histInd), 2).ToString() + " "
+                        'histStr += Math.Round(histogram(histX, histY, histInd), 2).ToString() + " "
                     Next _x
                 Next _y
 
@@ -685,8 +686,10 @@ Public Class AutoCountMethods
 
                 For histInd As Integer = 0 To histogram.GetLength(2) - 1
                     histLen += Math.Pow(histogram(histX, histY, histInd), 2)
+                    'histStr += Math.Round(histogram(histX, histY, histInd), 2).ToString() + " "
                 Next histInd
                 histLen = CSng(Math.Sqrt(histLen))
+                'Logger.AddInformation("x = " + histX.ToString() + " y = " + histY.ToString() + histStr)
 
                 'For histInd As Integer = 0 To histogram.GetLength(2) - 1
                 '    resX += histAnglesCos(histInd) * histogram(histX, histY, histInd) / histLen
@@ -721,22 +724,23 @@ Public Class AutoCountMethods
                 Dim resY = New Single(histogram.GetLength(2) - 1) {}
 
                 For histInd As Integer = 0 To histogram.GetLength(2) - 1
-                    resX(histInd) = (x + 1 - cellWidth) + cellWidth * (histAnglesCos(histInd) * histogram(histX, histY, histInd) / histLen)
-                    resY(histInd) = (x + 1 - cellWidth) + histAnglesSin(histInd) * histogram(histX, histY, histInd) / histLen
+                    resX(histInd) = (x - cellWidth) + cellWidth * Math.Abs(histAnglesCos(histInd)) * histogram(histX, histY, histInd) / histLen
+                    resY(histInd) = (x - cellWidth) + cellWidth * Math.Abs(histAnglesSin(histInd)) * histogram(histX, histY, histInd) / histLen
                 Next histInd
 
-                For _y As Integer = 0 To histogram.GetLength(2) - 1
+                For histInd As Integer = 0 To histogram.GetLength(2) - 1
                     For _x As Integer = (x + 1 - cellWidth) To x
 
-                        If (_y + (y + 1 - cellWidth) > y) Then Exit For
-                        If (_x <= resX(_y)) Then
-                            r(_x, _y + (y + 1 - cellWidth)) = Byte.MaxValue
-                            gb(_x, _y + (y + 1 - cellWidth)) = Byte.MinValue
+                        If (histInd + (y + 1 - cellWidth) > y) Then Exit For
+                        If (_x <= resX(histInd)) Then
+                            r(_x, histInd + (y + 1 - cellWidth)) = Byte.MaxValue
+                            gb(_x, histInd + (y + 1 - cellWidth)) = Byte.MinValue
                         End If
 
                     Next _x
-                Next _y
-
+                    histStr += resX(histInd).ToString() + " " 'Math.Round(cellWidth * histogram(histX, histY, histInd) / histLen, 2).ToString() + " "
+                Next histInd
+                Logger.AddInformation("x = " + histX.ToString() + " y = " + histY.ToString() + histStr)
                     'end of histogram visualisation
                     sw.Restart()
                 Next x
